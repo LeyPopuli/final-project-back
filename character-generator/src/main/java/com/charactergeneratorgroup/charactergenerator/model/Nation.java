@@ -1,16 +1,14 @@
 package com.charactergeneratorgroup.charactergenerator.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.DynamicUpdate;
 
 @Data
 @Entity
-@DynamicUpdate
 @NoArgsConstructor
 public class Nation {
     @Id

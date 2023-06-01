@@ -8,8 +8,9 @@ import lombok.NoArgsConstructor;
 @Data
 @Entity
 @NoArgsConstructor
-public class Religion {
+public class Concept {
+
     @Id
-    private String id;
     private String name;
+
 }

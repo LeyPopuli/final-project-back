@@ -1,4 +1,4 @@
-ADVANTAGES
+ADVANTAGES (76)
 
 
 BUENBEBEDOR("Buen bebedor",1,"El alcohol nunca te afecta negativamente, no importa cuánto bebas."),
@@ -79,7 +79,7 @@ BUENBEBEDOR("Buen bebedor",1,"El alcohol nunca te afecta negativamente, no impor
     TUTEVIENESCONMIGO("Tú te Viene Conmigo",5, "Gasta 1 punto de héroe para hacer que todo el daño que inflijas esta ronda aumente tanto como Heridas Dramáticas tengas.");
 
 
-BACKGROUNDS
+BACKGROUNDS (32)
 
 ARISTOCRATA("Aristócrata", "Naciste en el seno de la nobleza de tu país natal y asistes con regularidad a las cortes.", "Ganas 1 punto de héroe cuando demuestres que la nobleza es algo más que ropa cara y estar en la corte", Arrays.asList(Advantage.RICO, Advantage.SONRISAENCANTADORA), Arrays.asList(Skill.APUNTAR, Skill.CONOCIMIENTO, Skill.CONVENCER, Skill.EMPATIA, Skill.EQUITACION)),
     ARQUEOLOGO("Arqueólogo", "Estudias las ruinas syrneth y exploras los lugares perdidos de Terra.",
@@ -208,7 +208,7 @@ ARISTOCRATA("Aristócrata", "Naciste en el seno de la nobleza de tu país natal 
             Arrays.asList(Skill.APUNTAR, Skill.ARMAS, Skill.INTIMIDAR, Skill.PERCEPCION, Skill.TACTICASDEGUERRA));
 
 
-CHARACTERISTIC
+CHARACTERISTIC (5)
 
     MUSCULO("Músculo"),
     MANA("Maña"),
@@ -216,7 +216,7 @@ CHARACTERISTIC
     INGENIO("Ingenio"),
     DONAIRE("Donaire");
 
-HIBRIS
+HIBRIS (20)
 
 CURIOSO("Curioso", "Recibe 1 punto de héroe cuando investigues algo inusual, especialmente si parece peligroso."),
     INSEGURO("Inseguro", "Recibe 1 punto de héroe cuando tu héroe decida que no puede realizar una acción sin la ayuda de otro héroe. Por ejemplo, puedes insistir para que otro héroe gaste 1 punto de héroe y te dé dados adicionales o pedirle que use una de sus ventajas para ayudarte."),
@@ -239,7 +239,7 @@ CURIOSO("Curioso", "Recibe 1 punto de héroe cuando investigues algo inusual, es
     SUPERSTICIOSO("Supersticioso", "Recibe 1 punto de héroe cuando te niegues a resolver un problema usando Hechicería, un artefacto o cualquier otro efecto místico en el que no confías."),
     TEMPERAMENTAL("Temperamental", "Recibe 1 punto de héroe cuando tu héroe pierda los estribos y se enfurezca y eso cause problemas.");
 
-NATION
+NATION(10)
 
     AVALON("Ávalon", Religion.LAIGLESIADEAVALON),
     CASTILLA("Castilla",Religion.LAIGLESIADELOSPROFETAS),
@@ -250,10 +250,9 @@ NATION
     MONTAIGNE("Montaigne",Religion.LAIGLESIADELOSPROFETAS),
     USSURA("Ussura",Religion.ORTODOXOS),
     VESTENMENNAVENJAR("Vestenmennavenjar",Religion.MITOLOGIAVIVA),
-    VODACCE("Vodacce",Religion.LAIGLESIADELOSPROFETAS),
-    NINGUNA("Ninguna", Religion.LOSINSTRUMENTOSDELALEGION);
+    VODACCE("Vodacce",Religion.LAIGLESIADELOSPROFETAS);
 
-    RELIGION
+    RELIGION(10)
         LAIGLESIADELOSPROFETAS("La Iglesia de los Profetas"),
         OBJECIONISTAS("Objecionistas"),
         ORTODOXOS("Ortodoxos"),
@@ -265,7 +264,7 @@ NATION
         LAINQUISICION("La Inquisición"),
         LOSINSTRUMENTOSDELALEGION("Los Instrumentos de Legión");
 
-        SKILL
+        SKILL (16)
 
         APUNTAR("Apuntar","Usa Apuntar cuando apuntes con una pistola a alguien y aprietes el gatillo. Usa Apuntar cuando lances un cuchillo en  una habitación abarrotada con mucha precisión, independientemente de que el objetivo sea una persona o un objeto."),
             ARMAS("Armas","Usa Armas cuando ataques a alguien mientras empuñes una espada, un hacha, un martillo o un cuchillo."),
@@ -285,7 +284,7 @@ NATION
             TENTAR("Tentar", "Usa Tentar cuando sobornes a alguien para que haga por ti algo que realmente no debería hacer. Usa Tentar cuando convenzas a alguien de que te dé algo de 'tiempo a solas'.");
 
 
-VIRTUE
+VIRTUE(20)
 
  ASTUTO("Astuto", "Activa tu Virtud para escapar del peligro en la escena actual. Solo te puedes salvar a ti mismo."),
     AMIGABLE("Amigable", "Activa tu Virtud cuando te encuentres con un personaje (incluso un villano) por primera vez. Te tratará como a un amigo durante una escena."),
