@@ -3,6 +3,7 @@ package com.charactergeneratorgroup.charactergenerator.model;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,4 +17,9 @@ public class Nation {
     private String name;
     @ManyToOne
     private Religion religion;
+
+    @ManyToOne
+    @JoinColumn(name = "language_id")
+    @JsonBackReference
+    private Language language;
 }

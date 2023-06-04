@@ -1,13 +1,12 @@
 package com.charactergeneratorgroup.charactergenerator.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.charactergeneratorgroup.charactergenerator.controller.handler.CustomException;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 import java.util.*;
-
 
 @Data
 @Entity
@@ -43,14 +42,11 @@ public class Hero {
 
     //Optional
     @Size(max = 30, message = "The richness cannot exceed 30 characters.")
-    private String richness;
+    private Integer richness = 0;
 
     //Optional
-    @ElementCollection
-    @CollectionTable(name = "hero_characteristic", joinColumns = @JoinColumn(name = "hero_id"))
-    @Column(name = "characteristic_level")
-    @MapKeyColumn(name = "characteristic_id")
-    private Map<Characteristic, Integer> characteristics  = new HashMap<>();
+    @OneToMany(mappedBy = "hero", cascade = CascadeType.ALL)
+    private List<HeroCharacteristic> characteristics  = new ArrayList<>();
 
     //Optional
     @ManyToMany
@@ -61,11 +57,8 @@ public class Hero {
     private List<Advantage> advantages = new ArrayList<>();
 
     //Optional
-    @ElementCollection
-    @CollectionTable(name = "hero_skill", joinColumns = @JoinColumn(name = "hero_id") )
-    @Column(name="skill_level")
-    @MapKeyColumn(name = "skill_id")
-    private Map<Skill, Integer> skills = new HashMap<>();
+    @OneToMany(mappedBy = "hero", cascade = CascadeType.ALL)
+    private List<HeroSkill> skills  = new ArrayList<>();
 
     //Optional
     @ManyToOne
@@ -82,12 +75,17 @@ public class Hero {
     //Optional
     private String imageUrl;
 
+    @ManyToMany
+    private List<Language> languages = new ArrayList<>();
+
     private Integer maximumBackgrounds = 2;
 
     private Integer remainingBackgrounds = 2;
 
 
     private Integer remainingCharacteristicPoints = 2;
+
+    private Integer maximumCharacteristicLevel = 5;
 
 
     private Integer maximumSkillLevel = 3;
@@ -99,6 +97,8 @@ public class Hero {
 
     private Integer maximumAdvantagePoints = 5;
 
+    private Integer remainingAdditionalLanguages = 0;
+
     private String error;
 
 
@@ -109,50 +109,75 @@ public class Hero {
     public void characteristicInitialization(List<Characteristic> allCharacteristics){
 
         for (Characteristic characteristic : allCharacteristics) {
-            this.characteristics.put(characteristic, 2);
+            HeroCharacteristic heroCharacteristic = new HeroCharacteristic();
+            heroCharacteristic.setCharacteristic(characteristic);
+            heroCharacteristic.setLevel(2);
+            characteristics.add(heroCharacteristic);
         }
 
     }
 
     private void incrementCharacteristicWithoutCost(Characteristic characteristic, Integer points) {
-        int currentValue = this.characteristics.get(characteristic);
-        int updatedValue = currentValue + points;
-        this.characteristics.put(characteristic, updatedValue);
-    }
 
-    private void incrementCharacteristic(Characteristic characteristic, Integer points) throws Exception {
-        if (this.remainingCharacteristicPoints >= points) {
-            int currentValue = this.characteristics.get(characteristic);
-            int updatedValue = currentValue + points;
-            this.characteristics.put(characteristic, updatedValue);
-            this.remainingAdvantagePoints -= points;
-        } else {
-            throw new Exception("Insufficient points");
-        }
-    }
-
-    private void decrementCharacteristic(Characteristic characteristic, Integer points) throws Exception {
-        if (this.characteristics.get(characteristic) - points >= 0) {
-            int currentValue = this.characteristics.get(characteristic);
-            int updatedValue = currentValue - points;
-            this.characteristics.put(characteristic, updatedValue);
-            this.remainingAdvantagePoints += points;
-        } else {
-            throw new Exception("Insufficient points");
-        }
-    }
-
-    private Characteristic getCharacteristicById(String id) throws Exception {
-        for (Map.Entry<Characteristic, Integer> entry : characteristics.entrySet()) {
-            Characteristic characteristic = entry.getKey();
-            if (characteristic.getId().equals(id)) {
-                return characteristic;
+        for (HeroCharacteristic heroCharacteristic : characteristics) {
+            if (heroCharacteristic.getCharacteristic().equals(characteristic)) {
+                int currentValue = heroCharacteristic.getLevel();
+                int updatedValue = currentValue + points;
+                heroCharacteristic.setLevel(updatedValue);
+                break;
             }
         }
-        throw new Exception("Characteristic not found with ID: " + id);
     }
 
-    public void removeBackground(Background background) throws Exception {
+    private void incrementCharacteristic(Characteristic characteristic, Integer points) throws CustomException {
+
+        if (this.remainingCharacteristicPoints >= points) {
+            for (HeroCharacteristic heroCharacteristic : characteristics) {
+                if (heroCharacteristic.getCharacteristic().equals(characteristic)) {
+                    int currentValue = heroCharacteristic.getLevel();
+                    int updatedValue = currentValue + points;
+                    heroCharacteristic.setLevel(updatedValue);
+                    break;
+                }
+            }
+            this.remainingCharacteristicPoints -= points;
+        } else {
+            throw new CustomException("Insufficient points");
+        }
+    }
+
+    private void decrementCharacteristic(Characteristic characteristic, Integer points) throws CustomException {
+        boolean foundCharacteristic = false;
+        for (HeroCharacteristic heroCharacteristic : characteristics) {
+            if (heroCharacteristic.getCharacteristic().equals(characteristic)) {
+                foundCharacteristic = true;
+                int currentValue = heroCharacteristic.getLevel();
+                if (currentValue - points >= 0) {
+                    int updatedValue = currentValue - points;
+                    heroCharacteristic.setLevel(updatedValue);
+                    this.remainingAdvantagePoints += points;
+                } else {
+                    throw new CustomException("Insufficient points in the characteristic.");
+                }
+                break;
+            }
+        }
+
+        if (!foundCharacteristic) {
+            throw new CustomException("Characteristic not found in this hero.");
+        }
+    }
+
+    private Characteristic getCharacteristicById(String id) throws CustomException {
+        for (HeroCharacteristic heroCharacteristic : characteristics) {
+            if (heroCharacteristic.getCharacteristic().getId().equals(id)) {
+                return heroCharacteristic.getCharacteristic();
+            }
+        }
+        throw new CustomException("Characteristic not found with ID: " + id);
+    }
+
+    public void removeBackground(Background background) throws CustomException {
         if (this.backgrounds.contains(background)) {
             this.backgrounds.remove(background);
             List<Advantage> newAdvantages = background.getAdvantages();
@@ -164,17 +189,17 @@ public class Hero {
             this.remainingBackgrounds += 1;
         } else {
             System.out.println("Background doesn't exist in this character.");
-            throw new Exception("Background doesn't exist in this character.");
+            throw new CustomException("Background doesn't exist in this character.");
         }
     }
 
-    public void addBackground(Background background) throws Exception {
+    public void addBackground(Background background) throws CustomException {
         if (this.backgrounds.contains(background)) {
             System.out.println("Background already exists in this character.");
-            throw new Exception("Background already exists in this character.");
+            throw new CustomException("Background already exists in this character.");
         } else if (this.backgrounds.size() >= maximumBackgrounds) {
             System.out.println("Maximum number of backgrounds reached for this character, remove one before adding a new one.");
-            throw new Exception("Maximum number of backgrounds reached for this character, remove one before adding a new one.");
+            throw new CustomException("Maximum number of backgrounds reached for this character, remove one before adding a new one.");
         } else {
             this.backgrounds.add(background);
             List<Advantage> newAdvantages = background.getAdvantages();
@@ -188,30 +213,44 @@ public class Hero {
     }
 
     public void skillsInitialization(List<Skill> allSkills) {
+
         for (Skill skill : allSkills) {
-            this.skills.put(skill, 0);
+            HeroSkill heroSkill = new HeroSkill();
+            heroSkill.setSkill(skill);
+            heroSkill.setLevel(0);
+            skills.add(heroSkill);
         }
     }
 
-    public void addSkillLevel(Skill skill, Integer points) throws Exception {
-        if (this.skills.get(skill) + points <= maximumSkillLevel && this.remainingSkillPoints >= points) {
-            int value = this.skills.get(skill);
-            this.skills.put(skill, value + points);
-            this.remainingSkillPoints -= points;
-        } else {
-            System.out.println("The level of a skill cannot exceed level 5 and you need to have enough points.");
-            throw new Exception("The level of a skill cannot exceed level 5 and you need to have enough points.");
+    public void addSkillLevel(Skill skill, Integer points) throws CustomException {
+        for (HeroSkill heroskill : skills) {
+            if (heroskill.getSkill().equals(skill)) {
+                if (heroskill.getLevel() + points <= maximumSkillLevel && this.remainingSkillPoints >= points) {
+                    int value = heroskill.getLevel();
+                    heroskill.setLevel(value + points);
+                    this.remainingSkillPoints -= points;
+                } else {
+                    System.out.println("The level of a skill cannot exceed level 5 and you need to have enough points.");
+                    throw new CustomException("The level of a skill cannot exceed level 5 and you need to have enough points.");
+                }
+            }
         }
+
     }
 
-    public void removeSkillLevel(Skill skill, Integer points) throws Exception {
-        if (this.skills.get(skill) - points >= 0) {
-            int value = this.skills.get(skill);
-            this.skills.put(skill, value - points);
-            this.remainingSkillPoints += points;
-        } else {
-            System.out.println("The level of a skill cannot be lower than level 0. ");
-            throw new Exception("The level of a skill cannot be lower than level 0. ");
+    public void removeSkillLevel(Skill skill, Integer points) throws CustomException {
+
+        for (HeroSkill heroSkill : skills) {
+            if (heroSkill.getSkill().equals(skill)) {
+                if (heroSkill.getLevel() - points >= 0) {
+                    int value = heroSkill.getLevel();
+                    heroSkill.setLevel(value - points);
+                    this.remainingSkillPoints += points;
+                } else {
+                    System.out.println("The level of a skill cannot be lower than level 0. ");
+                    throw new CustomException("The level of a skill cannot be lower than level 0. ");
+                }
+            }
         }
     }
 
@@ -225,62 +264,62 @@ public class Hero {
         return duplicates;
     }
 
-    private void addAdvantage(Advantage advantage) throws Exception{
+    private void addAdvantage(Advantage advantage) throws CustomException{
 
         if (this.remainingAdvantagePoints - advantage.getPoints() >= 0 && !this.advantages.contains(advantage)) {
             this.advantages.add(advantage);
             this.remainingAdvantagePoints -= advantage.getPoints();
         } else {
             System.out.println("It is not possible to add this advantage. Check that you do not already have this advantage or that the points are enough.");
-            throw new Exception("It is not possible to add this advantage. Check that you do not already have this advantage or that the points are enough.");
+            throw new CustomException("It is not possible to add this advantage. Check that you do not already have this advantage or that the points are enough.");
         }
     }
 
-    private void removeAdvantage(Advantage advantage) throws Exception{
+    private void removeAdvantage(Advantage advantage) throws CustomException{
 
         if (this.advantages.contains(advantage)) {
             this.advantages.remove(advantage);
             this.remainingAdvantagePoints += advantage.getPoints();
         } else {
             System.out.println("It is not possible to remove this advantage. Check if you have it before deleting it.");
-            throw new Exception("It is not possible to remove this advantage. Check if you have it before deleting it.");
+            throw new CustomException("It is not possible to remove this advantage. Check if you have it before deleting it.");
         }
     }
 
-    public void addVirtue(Virtue virtue) throws Exception {
+    public void addVirtue(Virtue virtue) throws CustomException {
         if (this.virtue != null) {
             System.out.println("This hero already has a virtue. Remove it first.");
-            throw new Exception("This hero already has a virtue. Remove it first.");
+            throw new CustomException("This hero already has a virtue. Remove it first.");
         } else {
             this.virtue = virtue;
         }
     }
 
-    public void removeVirtue() throws Exception {
+    public void removeVirtue() throws CustomException {
         if (this.virtue != null) {
             this.virtue = null;
         } else {
             System.out.println("This hero has no virtue to be eliminated.");
-            throw new Exception("This hero has no virtue to be eliminated.");
+            throw new CustomException("This hero has no virtue to be eliminated.");
         }
     }
 
-    public void addHybris(Hybris hybris) throws Exception {
+    public void addHybris(Hybris hybris) throws CustomException {
         if (this.hybris != null) {
             System.out.println("This hero already has a hibris. Remove it first.");
-            throw new Exception("This hero already has a hibris. Remove it first.");
+            throw new CustomException("This hero already has a hibris. Remove it first.");
         } else {
             this.hybris = hybris;
         }
     }
 
 
-    public void removeHybris() throws Exception {
+    public void removeHybris() throws CustomException {
         if (this.hybris != null) {
             this.hybris = null;
         } else {
             System.out.println("This hero has no hibris to be eliminated.");
-            throw new Exception("This hero has no hibris to be eliminated.");
+            throw new CustomException("This hero has no hibris to be eliminated.");
         }
     }
 
@@ -325,7 +364,7 @@ public class Hero {
 
     }
 
-    public void initialPointsAssignationByNationRandom() throws Exception {
+    public void initialPointsAssignationByNationRandom() throws CustomException {
         Random random = new Random();
         int randomNumber = random.nextInt(2);
 
@@ -426,18 +465,28 @@ public class Hero {
     public void addRestRandomCharacteristic(List<Characteristic> allCharacteristics){
 
         Random random = new Random();
-        List<Characteristic> availableCharacteristics = new ArrayList<>(this.characteristics.keySet());
+        List<HeroCharacteristic> availableCharacteristics = new ArrayList<>();
 
-        while (this.remainingCharacteristicPoints > 0) {
-            Characteristic randomCharacteristic = availableCharacteristics.get(random.nextInt(availableCharacteristics.size()));
-            int currentLevel = this.characteristics.get(randomCharacteristic);
-            this.characteristics.put(randomCharacteristic, currentLevel + 1);
+        for (HeroCharacteristic heroCharacteristic : characteristics) {
+            if (heroCharacteristic.getLevel() < this.maximumCharacteristicLevel) {
+                availableCharacteristics.add(heroCharacteristic);
+            }
+        }
+
+        while (this.remainingCharacteristicPoints > 0 && !availableCharacteristics.isEmpty()) {
+            HeroCharacteristic randomCharacteristic = availableCharacteristics.get(random.nextInt(availableCharacteristics.size()));
+            int currentLevel = randomCharacteristic.getLevel();
+            randomCharacteristic.setLevel(currentLevel + 1);
             this.remainingCharacteristicPoints--;
+
+            if (randomCharacteristic.getLevel() >= this.maximumCharacteristicLevel) {
+                availableCharacteristics.remove(randomCharacteristic);
+            }
         }
     }
 
 
-    public void addRandomBackgrounds(List<Background> allBackgrounds, List<Advantage> allAdvantages) throws Exception {
+    public void addRandomBackgrounds(List<Background> allBackgrounds, List<Advantage> allAdvantages) throws CustomException {
 
         Random random = new Random();
         int index1 = random.nextInt(allBackgrounds.size());
@@ -462,21 +511,21 @@ public class Hero {
     public void addRandomSkillLevels() {
         Random random = new Random();
 
-        List<Skill> eligibleSkills = new ArrayList<>();
+        List<HeroSkill> eligibleSkills = new ArrayList<>();
 
-        for (Skill skill : this.skills.keySet()) {
-            if (this.skills.get(skill) < 3) {
-                eligibleSkills.add(skill);
+        for (HeroSkill heroSkill : this.skills) {
+            if (heroSkill.getLevel() < 3) {
+                eligibleSkills.add(heroSkill);
             }
         }
 
         while (this.remainingSkillPoints > 0 && !eligibleSkills.isEmpty()) {
-            Skill randomSkill = eligibleSkills.get(random.nextInt(eligibleSkills.size()));
-            int newSkillPoints = this.skills.get(randomSkill);
+            HeroSkill randomSkill = eligibleSkills.get(random.nextInt(eligibleSkills.size()));
+            int newSkillPoints = randomSkill.getLevel();
             int maxPointsToAdd = Math.min(this.remainingSkillPoints, this.maximumSkillLevel - newSkillPoints);
             int pointsToAdd = random.nextInt(maxPointsToAdd) + 1;
 
-            skills.put(randomSkill, this.skills.get(randomSkill) + pointsToAdd);
+            randomSkill.setLevel(randomSkill.getLevel() + pointsToAdd);
             this.remainingSkillPoints -= pointsToAdd;
 
             eligibleSkills.remove(randomSkill);
@@ -533,7 +582,7 @@ public class Hero {
         }
     }
 
-    public void addARandomHybris(List<Hybris> allHybris) throws Exception {
+    public void addARandomHybris(List<Hybris> allHybris) throws CustomException {
 
         Random random = new Random();
         int index = random.nextInt(allHybris.size());
@@ -543,13 +592,69 @@ public class Hero {
         this.addHybris(hybris);
     }
 
-    public void addARandomVirtue(List<Virtue> allVirtues) throws Exception {
+    public void addARandomVirtue(List<Virtue> allVirtues) throws CustomException {
         Random random = new Random();
         int index = random.nextInt(allVirtues.size());
 
         Virtue virtue = allVirtues.get(index);
 
         this.addVirtue(virtue);
+    }
+
+    public void initializeLanguages(List<Language> allLanguages) {
+        for (Language language : allLanguages) {
+            if (language.getId().equals("THEANOANTIGUO") || language.getId().equals(this.getNation().getLanguage().getId())) {
+                this.languages.add(language);
+            }
+        }
+        this.howManyAdditionalLanguages();
+    }
+
+    public void howManyAdditionalLanguages() {
+        for (HeroCharacteristic heroCharacteristic : this.getCharacteristics()) {
+            if (heroCharacteristic.getCharacteristic().getId().equals("INGENIO") && heroCharacteristic.getLevel() > 2) {
+                this.remainingAdditionalLanguages = heroCharacteristic.getLevel() - 2;
+            }
+        }
+    }
+
+    public void addLanguage(Language language) {
+        if (this.remainingAdditionalLanguages > 0 && !this.languages.contains(language)) {
+            this.languages.add(language);
+            this.remainingAdditionalLanguages--;
+        }
+    }
+
+    public void removeLanguage(Language language) {
+        if (this.languages.contains(language)) {
+            this.languages.remove(language);
+            this.remainingAdditionalLanguages++;
+        }
+    }
+
+
+    public void addARandomsLanguages(List<Language> allLanguages) throws CustomException {
+        List<Language> availableLanguages = new ArrayList<>();
+        if (this.remainingAdditionalLanguages > 0) {
+            for (Language language : allLanguages) {
+                if (!this.languages.contains(language)){
+                    availableLanguages.add(language);
+                }
+            }
+
+            if (availableLanguages.isEmpty()) {
+                throw new CustomException("No more available languages.");
+            }
+
+            Random random = new Random();
+
+            for (int i = 0; i < this.remainingAdditionalLanguages; i++) {
+                int randomIndex = random.nextInt(availableLanguages.size());
+                Language randomLanguage = availableLanguages.get(randomIndex);
+                this.addLanguage(randomLanguage);
+                availableLanguages.remove(randomIndex);
+            }
+        }
     }
 
 }
