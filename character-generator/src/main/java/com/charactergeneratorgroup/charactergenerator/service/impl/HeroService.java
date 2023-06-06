@@ -1,11 +1,21 @@
 package com.charactergeneratorgroup.charactergenerator.service.impl;
 
+import com.charactergeneratorgroup.charactergenerator.controller.handler.CustomException;
 import com.charactergeneratorgroup.charactergenerator.model.*;
+import com.charactergeneratorgroup.charactergenerator.model.classes.PdfGenerator;
 import com.charactergeneratorgroup.charactergenerator.repository.*;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
+import org.apache.pdfbox.pdmodel.interactive.form.PDField;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 
 
 @Service
@@ -44,11 +54,12 @@ public class HeroService {
     @Autowired
     LanguageRepository languageRepository;
 
-    public Hero createRandomHero(String user) {
+    @Autowired
+    UserRepository userRepository;
+
+    public Hero createRandomHero(String userName) {
 
         Hero newHero = new Hero();
-
-        newHero.setUser(user);
 
 //      Taking all the records from the database.
         List<Concept> allConcepts = conceptRepository.findAll();
@@ -83,13 +94,40 @@ public class HeroService {
 
     }
 
-    public void saveHero(Hero hero) {
+    public void saveHero(String userName, Hero hero) {
         for (HeroCharacteristic heroCharacteristic : hero.getCharacteristics()) {
             heroCharacteristic.setHero(hero);
         }
         for (HeroSkill heroskill : hero.getSkills()) {
             heroskill.setHero(hero);
         }
+
+        Optional<User> userOptional = userRepository.findByUserName(userName);
+        User user = userOptional.orElseThrow(() -> new CustomException("User not found."));
+
+        hero.setUser(user);
+
         heroRepository.save(hero);
+    }
+
+    public Hero getHeroByUserAndId(String userName, Long id) {
+
+        Optional<Hero> heroOptional = heroRepository.findByUser_UserNameAndId(userName, id);
+
+        return heroOptional.orElseThrow(() -> new CustomException("Hero not found."));
+    }
+
+    public String downloadPdf(String username, Long id) throws IOException {
+        Hero hero = heroRepository.findByUser_UserNameAndId(username, id).orElseThrow(() -> new CustomException("Hero not found"));
+
+        PdfGenerator pdfGenerator = new PdfGenerator();
+
+        return pdfGenerator.generateHeroSheet(hero);
+    }
+
+    public void deleteById(String userName, Long id) {
+        Optional<Hero> heroOptional = heroRepository.findByUser_UserNameAndId(userName, id);
+        Hero hero = heroOptional.orElseThrow(() -> new CustomException("Hero not found."));
+        heroRepository.delete(hero);
     }
 }

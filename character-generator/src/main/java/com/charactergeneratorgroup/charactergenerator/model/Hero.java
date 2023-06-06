@@ -16,9 +16,8 @@ public class Hero {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    //String for the moment
-    @NotEmpty(message = "User can't be an empty value.")
-    private String user;
+    @ManyToOne
+    private User user;
 
 //    @NotEmpty(message = "You must supply a name for the character.")
     @Size(max = 30, message = "The name cannot exceed 30 characters.")
@@ -38,7 +37,7 @@ public class Hero {
 
     //Optional
     @Size(max = 30, message = "The reputation cannot exceed 30 characters.")
-    private String reputation;
+    private String reputation = "";
 
     //Optional
     @Size(max = 30, message = "The richness cannot exceed 30 characters.")
