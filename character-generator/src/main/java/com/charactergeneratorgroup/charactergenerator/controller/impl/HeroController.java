@@ -1,24 +1,18 @@
 package com.charactergeneratorgroup.charactergenerator.controller.impl;
 
-import com.charactergeneratorgroup.charactergenerator.controller.handler.CustomException;
 import com.charactergeneratorgroup.charactergenerator.model.Hero;
-import com.charactergeneratorgroup.charactergenerator.model.classes.PdfGenerator;
 import com.charactergeneratorgroup.charactergenerator.repository.HeroRepository;
 import com.charactergeneratorgroup.charactergenerator.service.impl.HeroService;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.util.FileCopyUtils;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 
-import java.io.BufferedInputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
-import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -61,8 +55,8 @@ public class HeroController {
         heroService.saveHero(user, hero);
     }
 
-    @GetMapping("/{user}/{id}/pdf")
-    public String downloadPdf(@PathVariable String user, @PathVariable Long id) throws IOException {
+    @GetMapping(path="/{user}/{id}/pdf", produces = MediaType.APPLICATION_PDF_VALUE)
+    public @ResponseBody byte[] downloadPdf(@PathVariable String user, @PathVariable Long id) throws IOException {
         return heroService.downloadPdf(user, id);
     }
 

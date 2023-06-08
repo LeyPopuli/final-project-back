@@ -69,9 +69,6 @@ public class Hero {
 
     //Optional
     @Column(length = 1000)
-    private String history;
-
-    //Optional
     private String imageUrl;
 
     @ManyToMany

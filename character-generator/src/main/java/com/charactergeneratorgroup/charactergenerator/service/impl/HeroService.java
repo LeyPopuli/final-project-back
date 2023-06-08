@@ -2,18 +2,12 @@ package com.charactergeneratorgroup.charactergenerator.service.impl;
 
 import com.charactergeneratorgroup.charactergenerator.controller.handler.CustomException;
 import com.charactergeneratorgroup.charactergenerator.model.*;
-import com.charactergeneratorgroup.charactergenerator.model.classes.PdfGenerator;
+import com.charactergeneratorgroup.charactergenerator.classes.PdfGenerator;
 import com.charactergeneratorgroup.charactergenerator.repository.*;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
-import org.apache.pdfbox.pdmodel.interactive.form.PDField;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
@@ -117,7 +111,7 @@ public class HeroService {
         return heroOptional.orElseThrow(() -> new CustomException("Hero not found."));
     }
 
-    public String downloadPdf(String username, Long id) throws IOException {
+    public byte[] downloadPdf(String username, Long id) throws IOException {
         Hero hero = heroRepository.findByUser_UserNameAndId(username, id).orElseThrow(() -> new CustomException("Hero not found"));
 
         PdfGenerator pdfGenerator = new PdfGenerator();
