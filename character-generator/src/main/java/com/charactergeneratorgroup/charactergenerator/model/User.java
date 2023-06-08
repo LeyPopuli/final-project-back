@@ -6,11 +6,13 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.hibernate.annotations.DynamicUpdate;
 
 
 @Data
 @Entity
 @NoArgsConstructor
+@DynamicUpdate
 public class User {
 
     @Id

@@ -4,6 +4,7 @@ import com.charactergeneratorgroup.charactergenerator.controller.handler.CustomE
 import com.charactergeneratorgroup.charactergenerator.model.*;
 import com.charactergeneratorgroup.charactergenerator.classes.PdfGenerator;
 import com.charactergeneratorgroup.charactergenerator.repository.*;
+import com.charactergeneratorgroup.charactergenerator.service.interfaces.HeroServiceInterface;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,7 +14,7 @@ import java.util.Optional;
 
 
 @Service
-public class HeroService {
+public class HeroService implements HeroServiceInterface {
 
     @Autowired
     ConceptRepository conceptRepository;

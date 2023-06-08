@@ -1,5 +1,6 @@
 package com.charactergeneratorgroup.charactergenerator.controller.impl;
 
+import com.charactergeneratorgroup.charactergenerator.controller.interfaces.AuthControllerInterface;
 import com.charactergeneratorgroup.charactergenerator.model.User;
 import com.charactergeneratorgroup.charactergenerator.service.impl.AuthService;
 import jakarta.validation.Valid;
@@ -11,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1")
-public class AuthController {
+public class AuthController implements AuthControllerInterface {
 
     @Autowired
     private AuthService authService;

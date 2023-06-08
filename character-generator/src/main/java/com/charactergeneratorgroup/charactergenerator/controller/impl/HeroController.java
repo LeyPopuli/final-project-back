@@ -1,5 +1,6 @@
 package com.charactergeneratorgroup.charactergenerator.controller.impl;
 
+import com.charactergeneratorgroup.charactergenerator.controller.interfaces.HeroControllerInterface;
 import com.charactergeneratorgroup.charactergenerator.model.Hero;
 import com.charactergeneratorgroup.charactergenerator.repository.HeroRepository;
 import com.charactergeneratorgroup.charactergenerator.service.impl.HeroService;
@@ -11,15 +12,13 @@ import org.springframework.web.bind.annotation.*;
 
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/hero")
-public class HeroController {
+public class HeroController implements HeroControllerInterface {
 
     @Autowired
     HeroService heroService;
@@ -28,6 +27,7 @@ public class HeroController {
     private HeroRepository heroRepository;
 
     @GetMapping("/{user}/random")
+    @ResponseStatus(HttpStatus.CREATED)
     public Hero createRandomHero(@PathVariable String user) {
         return heroService.createRandomHero(user);
     }
